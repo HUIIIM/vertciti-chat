@@ -23,7 +23,7 @@ def test_wrong_key_401(client):
 
 
 def test_bearer_header_accepted(client, auth_headers):
-    from tests.conftest import TEST_KEY
+    from conftest import TEST_KEY
 
     r = client.post("/v1/chat/sessions", json={},
                     headers={"Authorization": f"Bearer {TEST_KEY}"})
