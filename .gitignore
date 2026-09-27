@@ -1,0 +1,18 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.db
+*.sqlite*
+# node
+node_modules/
+.next/
+out/
+# secrets
+.env
+.env.*
+*.pem
+# misc
+.DS_Store
+*.log

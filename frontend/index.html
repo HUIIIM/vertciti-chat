@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!-- vertciti chat frontend (dev).
+     TODO(brand): 页面标题/品牌名为 interim 描述性命名"vertciti 智能助手"，
+     终名走品牌设计组＋GC 确认后替换。D146：旧项目名称不得出现在任何用户可见处。 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vertciti 智能助手</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">vertciti</div>
+  <!-- TODO(brand): 终名待定，当前 interim 名 -->
+  <div class="title">智能助手 <span class="assistant-en">Assistant</span></div>
+  <div class="honesty" id="honestyBadge" title="诚实状态：dev 过渡态">🟡 dev</div>
+</header>
+
+<main class="chat">
+  <div id="messages" class="messages" aria-live="polite"></div>
+  <div id="ctaRow" class="cta-row" hidden></div>
+  <form id="composer" class="composer">
+    <input id="input" type="text" placeholder="问点什么…（免费，无需注册）" autocomplete="off" maxlength="20000">
+    <button type="submit" id="sendBtn">发送</button>
+  </form>
+  <details class="keybox">
+    <summary>开发者：API Key</summary>
+    <input id="apiKey" type="password" placeholder="X-API-Key（仅保存在页面内存，刷新丢失）">
+    <button id="saveKey" type="button">使用</button>
+  </details>
+</main>
+
+<footer class="foot">
+  <span>免费体验 · 对话内容仅用于本次会话</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* vertciti chat frontend — clean-room original styles. Brand: lowercase vertciti. */
+:root {
+  --bg: #0e1116;
+  --panel: #161b22;
+  --line: #2a3139;
+  --text: #e8edf2;
+  --muted: #9aa6b2;
+  --accent: #35d07f; /* vert green */
+  --warn: #e8b93e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.brand { font-weight: 800; letter-spacing: .5px; color: var(--accent); font-size: 20px; }
+.title { font-size: 15px; }
+.assistant-en { color: var(--muted); font-size: 12px; }
+.honesty { margin-left: auto; font-size: 13px; color: var(--warn); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 10px; }
+.chat { flex: 1; display: flex; flex-direction: column; max-width: 760px; width: 100%;
+  margin: 0 auto; padding: 12px; }
+.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  padding: 8px 2px 16px; min-height: 40vh; }
+.msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word; }
+.msg.user { align-self: flex-end; background: #1f6f43; }
+.msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
+.msg .tag { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; }
+.composer { display: flex; gap: 8px; padding: 10px 0; }
+.composer input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); font-size: 15px; }
+.composer button { padding: 0 22px; border: 0; border-radius: 10px; background: var(--accent);
+  color: #06210f; font-weight: 700; font-size: 15px; cursor: pointer; }
+.composer button:disabled { opacity: .5; cursor: default; }
+.cta-row { display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0 12px; }
+.cta { border: 1px solid var(--accent); color: var(--accent); border-radius: 10px;
+  padding: 10px 14px; text-decoration: none; font-size: 14px; }
+.cta small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.keybox { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.keybox input { width: 70%; padding: 8px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); }
+.foot { text-align: center; color: var(--muted); font-size: 12px; padding: 10px; }
+@media (max-width: 480px) {
+  .msg { max-width: 92%; }
+  .composer button { padding: 0 14px; }
+}

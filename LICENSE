@@ -1,0 +1,13 @@
+vertciti clean-room engineering — proprietary.
+
+Copyright (c) 2026 vertciti. All rights reserved.
+
+This codebase ("vertciti chat", codename `chat`) is original expression written
+for vertciti. No code was copied from any prior codebase: the 2023 line served
+as read-only learning material only (D67 / D147 clean-room chain), and
+integration with the anomalies clean-room runtime is over HTTP product-surface
+APIs only (M1 bidirectional zero-dependency rule).
+
+Third-party dependencies are listed in backend/requirements.txt with pinned
+versions; their licenses are permissive (MIT/BSD) and verified by
+ci/license-scan.py on every CI run.
