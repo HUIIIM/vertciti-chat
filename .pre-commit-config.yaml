@@ -1,0 +1,14 @@
+# pre-commit: local secret guard. Install: pip install pre-commit && pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=5000"]
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks

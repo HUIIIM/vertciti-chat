@@ -1,0 +1,16 @@
+# Source: actions/dependency-review-action docs.
+# NOTE: gated on non-private repos (dependency review data needs Advanced Security on private).
+name: Dependency Review
+on: [pull_request]
+permissions:
+  contents: read
+jobs:
+  review:
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: "GPL-2.0, GPL-3.0, AGPL-3.0, SSPL-1.0"
