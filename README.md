@@ -1,3 +1,6 @@
+[![CI](https://github.com/HUIIIM/vertciti-chat/actions/workflows/ci.yml/badge.svg)](https://github.com/HUIIIM/vertciti-chat/actions/workflows/ci.yml)
+[![Secret scan](https://github.com/HUIIIM/vertciti-chat/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/HUIIIM/vertciti-chat/actions/workflows/gitleaks.yml)
+
 # vertciti chat（codename `chat`，module id `chat`）
 
 chatbot clean-room 重建项目第二步：在 anomalies clean-room 运行时之上重建的
