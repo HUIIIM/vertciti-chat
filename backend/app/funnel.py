@@ -34,11 +34,6 @@ router = APIRouter(tags=["funnel"])
 MAIN_SITE = "https://vertciti.com/"
 
 CAMPAIGNS = {
-    "procurement_concierge": {
-        "title": "AI 采购代办",
-        "blurb": "让 AI 替你跑腿采购：把需求丢给 vertciti 采购代办，按单收费。",
-        "path": "/",
-    },
     "capability_catalog": {
         "title": "能力菜单",
         "blurb": "看看 vertciti 智能体都能替你做什么（真实能力，明码标价）。",
