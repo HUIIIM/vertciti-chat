@@ -1,52 +1,90 @@
-/* vertciti chat frontend — clean-room original styles. Brand: lowercase vertciti. */
-:root {
-  --bg: #0e1116;
-  --panel: #161b22;
-  --line: #2a3139;
-  --text: #e8edf2;
-  --muted: #9aa6b2;
-  --accent: #35d07f; /* vert green */
-  --warn: #e8b93e;
+/* vertciti chat frontend — vertciti DNA（浅色机构版，对标 BlackRock：黑白为骨、橙=指针、
+   黄=注意、直角、系统字体、左对齐）。调色板同官网 DNA。 */
+:root{
+  --bg:#FFFFFF; --fg:#000000; --fg-2:#3F3F3F; --fg-3:#6B6B6B; --soft:#F3F3F3;
+  --line:#DEDEDE; --strong:#000000; --card:#FFFFFF;
+  --ok:#1D8348; --warn:#FFCE00; --bad:#C62828;
+  --orange:#FF4713; --yellow:#FFCE00;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--text);
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  display: flex; flex-direction: column; min-height: 100vh;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#000000; --fg:#FFFFFF; --fg-2:#F5F5F5; --fg-3:#DEDEDE; --soft:#161616;
+  --line:#3A3A3A; --strong:#FFFFFF; --card:#0E0E0E; --ok:#3FA86A; --bad:#E25555;
+}}
+:root[data-theme="dark"]{
+  --bg:#000000; --fg:#FFFFFF; --fg-2:#F5F5F5; --fg-3:#DEDEDE; --soft:#161616;
+  --line:#3A3A3A; --strong:#FFFFFF; --card:#0E0E0E; --ok:#3FA86A; --bad:#E25555;
 }
-.topbar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
-}
-.brand { font-weight: 800; letter-spacing: .5px; color: var(--accent); font-size: 20px; }
-.title { font-size: 15px; }
-.assistant-en { color: var(--muted); font-size: 12px; }
-.honesty { margin-left: auto; font-size: 13px; color: var(--warn); border: 1px solid var(--line);
-  border-radius: 999px; padding: 4px 10px; }
-.chat { flex: 1; display: flex; flex-direction: column; max-width: 760px; width: 100%;
-  margin: 0 auto; padding: 12px; }
-.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-  padding: 8px 2px 16px; min-height: 40vh; }
-.msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; line-height: 1.6;
-  white-space: pre-wrap; word-break: break-word; }
-.msg.user { align-self: flex-end; background: #1f6f43; }
-.msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); }
-.msg .tag { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; }
-.composer { display: flex; gap: 8px; padding: 10px 0; }
-.composer input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--text); font-size: 15px; }
-.composer button { padding: 0 22px; border: 0; border-radius: 10px; background: var(--accent);
-  color: #06210f; font-weight: 700; font-size: 15px; cursor: pointer; }
-.composer button:disabled { opacity: .5; cursor: default; }
-.cta-row { display: flex; gap: 10px; flex-wrap: wrap; padding: 6px 0 12px; }
-.cta { border: 1px solid var(--accent); color: var(--accent); border-radius: 10px;
-  padding: 10px 14px; text-decoration: none; font-size: 14px; }
-.cta small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
-.keybox { margin-top: 8px; color: var(--muted); font-size: 13px; }
-.keybox input { width: 70%; padding: 8px; border-radius: 8px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--text); }
-.foot { text-align: center; color: var(--muted); font-size: 12px; padding: 10px; }
-@media (max-width: 480px) {
-  .msg { max-width: 92%; }
-  .composer button { padding: 0 14px; }
-}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);
+  display:flex;flex-direction:column;min-height:100vh;line-height:1.6;
+  font-variant-numeric:tabular-nums;letter-spacing:.01em}
+::selection{background:var(--yellow);color:#000}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+
+/* 公司条（黑底白字，DNA app-shell） */
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#000;color:#fff}
+.brand{font-weight:800;letter-spacing:-.01em;color:#fff;font-size:18px}
+.brand .dot{color:var(--orange)}
+.title{font-size:14px;color:#BDBDBD}
+.assistant-en{color:#8A8A8A;font-size:12px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.honesty{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#DEDEDE;
+  border:1px solid #333;padding:4px 9px}
+.honesty .sq{width:8px;height:8px;background:var(--yellow);display:inline-block}
+.langtoggle{background:none;border:0;color:#BDBDBD;font-size:13px;font-weight:700;
+  cursor:pointer;padding:4px 8px}
+.langtoggle:hover{color:#fff}
+
+/* 对话区 */
+.chat{flex:1;display:flex;flex-direction:column;max-width:760px;width:100%;margin:0 auto;
+  padding:16px;padding-left:max(16px,env(safe-area-inset-left,0));padding-right:max(16px,env(safe-area-inset-right,0))}
+.messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+  padding:8px 0 16px;min-height:40vh}
+.msg{max-width:85%;padding:12px 14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg.user{align-self:flex-end;background:#000;color:#fff}
+.msg.assistant{align-self:flex-start;background:var(--card);border:1px solid var(--line);
+  border-top:3px solid var(--strong)}
+.msg .tag{display:block;font-size:11px;color:var(--fg-3);margin-top:8px}
+
+/* 输入条 */
+.composer{display:flex;gap:8px;padding:12px 0}
+.composer input{flex:1;min-width:0;padding:14px;border:1px solid var(--line);background:var(--card);
+  color:var(--fg);font-size:15px;font-family:inherit}
+.composer button{padding:0 24px;border:2px solid #000;background:#000;color:#fff;font-weight:800;
+  font-size:15px;cursor:pointer;min-height:52px;font-family:inherit}
+.composer button:hover:not(:disabled){background:#fff;color:#000}
+.composer button:disabled{opacity:.45;cursor:default}
+
+/* CTA（墨字 + 橙箭头，不用彩色块） */
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 12px}
+.cta{border:1px solid var(--line);border-top:3px solid var(--strong);color:var(--fg);
+  padding:12px 14px;text-decoration:none;font-size:14px;font-weight:700}
+.cta:hover{border-top-color:var(--orange)}
+.cta small{display:block;color:var(--fg-3);font-size:11px;margin-top:4px;font-weight:400}
+
+/* 开发者 key */
+.keybox{margin-top:8px;color:var(--fg-3);font-size:13px}
+.keybox summary{cursor:pointer}
+.keybox input{width:70%;max-width:420px;padding:10px;border:1px solid var(--line);
+  background:var(--card);color:var(--fg);margin-top:8px;font-family:inherit}
+.keybox button{margin-left:8px;padding:8px 16px;border:2px solid #000;background:#fff;color:#000;
+  font-weight:800;cursor:pointer;font-family:inherit}
+
+.foot{color:var(--fg-3);font-size:12px;padding:16px;border-top:1px solid var(--line);
+  max-width:760px;width:100%;margin:0 auto;text-align:left}
+
+@media (max-width:480px){ .msg{max-width:92%} .composer button{padding:0 16px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* 欢迎空态（填满首屏、给建议词；DNA 左对齐 + 方卡 + 橙指针） */
+.welcome{padding:32px 0 8px}
+.welcome.hidden{display:none}
+.w-eyebrow{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3);margin:0 0 12px}
+.w-title{font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0 0 20px;text-wrap:balance}
+.sug-row{display:flex;flex-wrap:wrap;gap:10px}
+.sug{border:1px solid var(--line);border-top:3px solid var(--strong);background:var(--card);color:var(--fg);padding:12px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left}
+.sug:hover{border-top-color:var(--orange)}
+
+html[lang="en"] .assistant-en{display:none}  /* EN 下标题已是 Assistant，隐藏重复英文副标 */
