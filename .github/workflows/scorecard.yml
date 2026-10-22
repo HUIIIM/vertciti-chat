@@ -16,6 +16,7 @@ jobs:
     if: ${{ !github.event.repository.private }}
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       security-events: write
       id-token: write
