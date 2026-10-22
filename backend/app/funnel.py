@@ -38,22 +38,30 @@ CAMPAIGNS = {
         "title": "AI 采购代办",
         "blurb": "让 AI 替你跑腿采购：把需求丢给 vertciti 采购代办，按单收费。",
         "path": "/",
+        "title_en": "AI procurement concierge",
+        "blurb_en": "Hand your sourcing to an AI: vertciti procurement concierge, priced per order.",
+        "path_en": "/en.html",
     },
     "capability_catalog": {
         "title": "能力菜单",
         "blurb": "看看 vertciti 智能体都能替你做什么（真实能力，明码标价）。",
         "path": "/",
+        "title_en": "Capability menu",
+        "blurb_en": "See what vertciti agents can actually do for you (real capabilities, clear prices).",
+        "path_en": "/en.html",
     },
 }
 
 
-def cta_url(campaign: str) -> str:
+def cta_url(campaign: str, lang: str = "zh") -> str:
     params = urlencode({
         "utm_source": "workbench",
         "utm_medium": "chat",
         "utm_campaign": campaign,
     })
-    return f"{MAIN_SITE.rstrip('/')}{CAMPAIGNS[campaign]['path']}?{params}"
+    spec = CAMPAIGNS[campaign]
+    path = spec["path_en"] if lang == "en" else spec["path"]
+    return f"{MAIN_SITE.rstrip('/')}{path}?{params}"
 
 
 @router.get("/v1/cta/funnel")
@@ -69,6 +77,10 @@ def funnel(identity: dict = Depends(require_api_key)):
                 "title": spec["title"],
                 "blurb": spec["blurb"],
                 "url": cta_url(name),
+                # Bilingual: the chat UI is zh/en, so every CTA ships both.
+                "title_en": spec["title_en"],
+                "blurb_en": spec["blurb_en"],
+                "url_en": cta_url(name, "en"),
                 "free": True,
             }
             for name, spec in CAMPAIGNS.items()
