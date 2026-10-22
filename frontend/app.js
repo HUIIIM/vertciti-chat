@@ -12,6 +12,7 @@
   var $sendBtn = document.getElementById("sendBtn");
   var $ctaRow = document.getElementById("ctaRow");
   var $badge = document.getElementById("honestyBadge");
+  var $welcome = document.getElementById("welcome");
 
   function headers(extra) {
     var h = { "Content-Type": "application/json", "X-API-Key": apiKey };
@@ -22,12 +23,13 @@
   function addMsg(role, text) {
     var div = document.createElement("div");
     div.className = "msg " + role;
+    if ($welcome) $welcome.classList.add("hidden");
     var body = document.createElement("div");
     body.textContent = text;
     div.appendChild(body);
     var tag = document.createElement("span");
     tag.className = "tag";
-    tag.textContent = role === "user" ? "你" : "vertciti 智能助手 🟡 dev";
+    tag.textContent = role === "user" ? T("you") : T("asst");
     div.appendChild(tag);
     $msgs.appendChild(div);
     $msgs.scrollTop = $msgs.scrollHeight;
@@ -53,7 +55,7 @@
           a.className = "cta"; a.href = cta.url; a.target = "_blank"; a.rel = "noopener";
           a.textContent = cta.title + " →";
           var small = document.createElement("small");
-          small.textContent = cta.blurb + "（免费）";
+          small.textContent = cta.blurb + T("free");
           a.appendChild(small);
           a.addEventListener("click", function () {
             track("cta_click", { target: cta.url, utm_campaign: cta.campaign });
@@ -98,7 +100,7 @@
                 var msg;
                 try { msg = JSON.parse(line.slice(5).trim()); } catch (e) { return; }
                 if (msg.type === "token") bubble.textContent += msg.text;
-                else if (msg.type === "error") bubble.textContent += "\n[出错] " + msg.message;
+                else if (msg.type === "error") bubble.textContent += "\n" + T("errPrefix") + msg.message;
                 $msgs.scrollTop = $msgs.scrollHeight;
               });
             });
@@ -112,7 +114,7 @@
   $form.addEventListener("submit", function (e) {
     e.preventDefault();
     var text = $input.value.trim();
-    if (!text || !apiKey) { alert("请先在下方填入 API Key"); return; }
+    if (!text || !apiKey) { alert(T("needKey")); return; }
     $input.value = "";
     $sendBtn.disabled = true;
     addMsg("user", text);
@@ -129,7 +131,7 @@
         return r.json();
       })
       .then(function (data) { return streamReply(data.message_id, bubble); })
-      .catch(function (err) { bubble.textContent = "[出错] " + err.message; })
+      .catch(function (err) { bubble.textContent = T("errPrefix") + err.message; })
       .then(function () { $sendBtn.disabled = false; $input.focus(); });
   });
 
@@ -139,9 +141,9 @@
     fetch(API + "/health")
       .then(function (r) { return r.json(); })
       .then(function (h) {
-        $badge.textContent = (h.honesty || "🟡") + " dev";
+        if ($badge) $badge.textContent = (h.honesty || "") + " dev";
         if (h.components && h.components.anomalies_runtime === "🟡") {
-          addMsg("assistant", "当前智能体运行时未连接（dev 过渡态 🟡），对话可能不可用。");
+          addMsg("assistant", T("notConnected"));
         }
       }).catch(function () {});
     loadCtas();
