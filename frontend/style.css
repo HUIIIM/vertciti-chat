@@ -58,7 +58,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);
 .composer button{padding:0 24px;border:2px solid #000;background:#000;color:#fff;font-weight:800;
   font-size:15px;cursor:pointer;min-height:52px;font-family:inherit}
 .composer button:hover:not(:disabled){background:#fff;color:#000}
-.composer button:disabled{opacity:.45;cursor:default}
+.composer button:disabled{cursor:not-allowed}
 
 /* CTA（墨字 + 橙箭头，不用彩色块） */
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 12px}
@@ -91,3 +91,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);
 .sug:hover{border-top-color:var(--orange)}
 
 html[lang="en"] .assistant-en{display:none}  /* EN 下标题已是 Assistant，隐藏重复英文副标 */
+/* a11y (standards/a11y): placeholders at full strength; disabled controls readable, never faded */
+::placeholder{color:var(--fg-3);-webkit-text-fill-color:var(--fg-3);opacity:1}
+button:disabled,input:disabled,textarea:disabled,select:disabled{opacity:1 !important;cursor:not-allowed;background:var(--soft) !important;
+  color:var(--fg-2) !important;-webkit-text-fill-color:var(--fg-2) !important;border-style:dashed !important}
