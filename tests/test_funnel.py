@@ -52,3 +52,11 @@ def test_workbench_entry_event(client, auth_headers):
         "type": "workbench_entry", "detail": {"module": "chat", "utm_source": "workbench"},
     }, headers=auth_headers)
     assert r.json()["recorded"] is True
+
+
+def test_funnel_ctas_are_bilingual(client, auth_headers):
+    r = client.get("/v1/cta/funnel", headers=auth_headers)
+    for cta in r.json()["ctas"]:
+        assert cta["title_en"] and cta["blurb_en"]
+        assert "/en.html?" in cta["url_en"] and "utm_campaign=" in cta["url_en"]
+        assert "/en.html" not in cta["url"]

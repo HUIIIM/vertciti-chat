@@ -52,13 +52,15 @@
         $ctaRow.hidden = false;
         data.ctas.forEach(function (cta) {
           var a = document.createElement("a");
-          a.className = "cta"; a.href = cta.url; a.target = "_blank"; a.rel = "noopener";
-          a.textContent = cta.title + " →";
+          var en = window.VC_LANG === "en";
+          var url = (en && cta.url_en) || cta.url;
+          a.className = "cta"; a.href = url; a.target = "_blank"; a.rel = "noopener";
+          a.textContent = ((en && cta.title_en) || cta.title) + " →";
           var small = document.createElement("small");
-          small.textContent = cta.blurb + T("free");
+          small.textContent = ((en && cta.blurb_en) || cta.blurb) + T("free");
           a.appendChild(small);
           a.addEventListener("click", function () {
-            track("cta_click", { target: cta.url, utm_campaign: cta.campaign });
+            track("cta_click", { target: url, utm_campaign: cta.campaign });
           });
           $ctaRow.appendChild(a);
         });
