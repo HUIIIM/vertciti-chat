@@ -18,7 +18,9 @@ const click = opt('--click', null);
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width, height: 900 }, colorScheme: scheme });
-  await p.goto(url, { waitUntil: 'networkidle' });
+  // apps that poll or stream never go network-idle: load first, then give idle at most 10 s
+  await p.goto(url, { waitUntil: 'load' });
+  await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
   if (inject) {
     const html = require('fs').readFileSync(inject, 'utf8');
     await p.evaluate((h) => {
