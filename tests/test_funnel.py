@@ -24,7 +24,7 @@ def test_cta_click_recorded_and_cost_per_lead(client, auth_headers, session_id):
 
     client.post("/v1/events", json={
         "type": "cta_click", "session_id": session_id,
-        "detail": {"target": "https://vertciti.com/", "utm_campaign": "procurement_concierge"},
+        "detail": {"target": "https://vertciti.com/", "utm_campaign": "vertciti_general"},
     }, headers=auth_headers)
     client.post("/v1/events", json={
         "type": "cta_click", "session_id": session_id, "detail": {},
