@@ -2,10 +2,10 @@
 #
 # vertciti clean-room engineering: original expression written for the vertciti
 # chat module (codename `chat`, module id `chat`). No code was copied from any
-# prior codebase (D67 / D147 clean-room chain; the 2023 line is read-only
+# prior codebase (clean-room chain; the 2023 line is read-only
 # learning material only).
 
-"""HTTP integration with the anomalies clean-room agent runtime (M1/D147:
+"""HTTP integration with the anomalies clean-room agent runtime (M1:
 HTTP product-surface calls only — no imports, no shared packages, no shared
 database, no shared secrets with that codebase).
 

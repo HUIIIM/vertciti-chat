@@ -4,7 +4,7 @@ Copyright (c) 2026 VERTCITY LLC. All rights reserved.
 
 This codebase ("vertciti chat", codename `chat`) is original expression written
 for vertciti. No code was copied from any prior codebase: the 2023 line served
-as read-only learning material only (D67 / D147 clean-room chain), and
+as read-only learning material only (clean-room chain), and
 integration with the anomalies clean-room runtime is over HTTP product-surface
 APIs only (M1 bidirectional zero-dependency rule).
 

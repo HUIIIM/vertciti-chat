@@ -11,9 +11,9 @@ Stack: Python backend (FastAPI) + vanilla JS static frontend
 4. Python: type hints on new functions; run `ruff check .` and `pytest -q` before commit.
    New Python files must parse: `python3 -c "import ast; ast.parse(open('f').read())"`.
 5. Node: `npm run lint` advisory, `npm run test` and `npm run build` must pass.
-6. No third-party code copied into the repo (D148 clean-room: learn ideas, don't copy).
+6. No third-party code copied into the repo (clean-room rule: learn ideas, don't copy).
 7. Brand hygiene: public-facing names use `vertciti` (lowercase).
-8. Docs/decision updates: significant behavior changes also update README and decision-log.
+8. Docs/decision updates: significant behavior changes also update README and the project changelog.
 
 ## Commands
 - Python tests: `pytest -q` (run from the directory holding requirements.txt)
