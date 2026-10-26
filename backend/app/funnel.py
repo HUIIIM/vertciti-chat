@@ -2,7 +2,7 @@
 #
 # vertciti clean-room engineering: original expression written for the vertciti
 # chat module (codename `chat`, module id `chat`). No code was copied from any
-# prior codebase (D67 / D147 clean-room chain; the 2023 line is read-only
+# prior codebase (clean-room chain; the 2023 line is read-only
 # learning material only).
 
 """Funnel CTA (contract v1 §2.5) + cost / conversion accounting (capability-map
@@ -10,7 +10,7 @@ loyalty item ③: cost accounting and conversion tracking go live the same day).
 
 - Every CTA to the main business carries
   utm_source=workbench&utm_medium=chat&utm_campaign=<campaign>.
-- The chat module is fully free; no paywall anywhere (D144).
+- The chat module is fully free; no paywall anywhere.
 - `POST /v1/events` records cta_click / workbench_entry / module_switch etc.
 - `GET /v1/metrics/summary` exposes total cost and cost-per-lead so the
   "single lead cost" north-star metric is computable from day one.

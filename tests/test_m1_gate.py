@@ -2,13 +2,13 @@
 #
 # vertciti clean-room engineering: original expression written for the vertciti
 # chat module (codename `chat`, module id `chat`). No code was copied from any
-# prior codebase (D67 / D147 clean-room chain; the 2023 line is read-only
+# prior codebase (clean-room chain; the 2023 line is read-only
 # learning material only).
 
 """M1 zero-dependency gate as a pytest (mirrors ci/m1-gate.sh).
 
 Forbids any reference to 2023-line package paths / module names / repo names
-in either direction, and forbids the D146 string in code and user-visible text.
+in either direction, and forbids the retired-name string in code and user-visible text.
 """
 
 import os
@@ -24,7 +24,7 @@ FORBIDDEN = [
     r"autogpt_platform",
     r"Significant-Gravitas",
     r"github-modernize",
-    r"Anomalies AutoGPT",  # D146: never in code or user-visible text
+    r"Anomalies AutoGPT",  # retired name: never in code or user-visible text
     r"anomalies autogpt",
 ]
 

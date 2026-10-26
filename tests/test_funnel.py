@@ -2,7 +2,7 @@
 #
 # vertciti clean-room engineering: original expression written for the vertciti
 # chat module (codename `chat`, module id `chat`). No code was copied from any
-# prior codebase (D67 / D147 clean-room chain; the 2023 line is read-only
+# prior codebase (clean-room chain; the 2023 line is read-only
 # learning material only).
 
 """Funnel CTA + cost/conversion accounting tests (contract §2.5, loyalty ③)."""
@@ -44,7 +44,7 @@ def test_health_honesty_labels(client):
     assert body["honesty"] == "🟡"
     assert body["components"]["chat_api"] == "🟢"
     assert body["components"]["anomalies_runtime"] == "🟢"  # probed True in fixture
-    assert "AutoGPT" not in r.text  # D146: 旧项目名称永不出现在用户可见面
+    assert "AutoGPT" not in r.text  # 旧项目名称永不出现在用户可见面
 
 
 def test_workbench_entry_event(client, auth_headers):

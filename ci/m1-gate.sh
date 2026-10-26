@@ -1,6 +1,6 @@
 #!/bin/bash
 # vertciti chat — M1 双向零依赖 CI 门禁（阻断式）。
-# 扫描新工程源码/文档：命中 2023 线标识（包路径/模块名/仓库名）或 D146 旧称即失败。
+# 扫描新工程源码/文档：命中 2023 线标识（包路径/模块名/仓库名）或旧项目名称即失败。
 # 本脚本自身包含这些模式以便禁止它们，故扫描时排除自身。
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -34,7 +34,7 @@ done < <(find . -path ./.venv -prune -o -path ./backend/data -prune -o \
   -o -name '*.md' -o -name '*.sh' -o -name '*.txt' -o -name '*.json' \) -print0)
 
 if [ "$fail" -eq 1 ]; then
-  echo "M1 gate: FAILED（疑似违反 D147 双向零依赖 / D146，上报 GC+CEO）"
+  echo "M1 gate: FAILED（疑似违反双向零依赖 / 旧名称禁用，上报 GC+CEO）"
   exit 1
 fi
 echo "M1 gate: PASS"

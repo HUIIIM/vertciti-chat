@@ -2,7 +2,7 @@
 #
 # vertciti clean-room engineering: original expression written for the vertciti
 # chat module (codename `chat`, module id `chat`). No code was copied from any
-# prior codebase (D67 / D147 clean-room chain; the 2023 line is read-only
+# prior codebase (clean-room chain; the 2023 line is read-only
 # learning material only).
 
 """Memory service, contract v1 §2.2 shape (delegating storage interface).
@@ -18,7 +18,7 @@ Isolation (contract §4, enforced server-side):
 - Any request attempting another module id → 403 + audit (cross-module recall
   is forbidden by contract §2.2).
 
-Privacy (D68): fields marked pii are redacted before storage. Two marker forms
+Privacy: fields marked pii are redacted before storage. Two marker forms
 are accepted in the store payload:
   1. a top-level `pii_fields: ["email", ...]` list in the request body, or
   2. nested marker dicts {"pii": true, "value": ...} anywhere in the payload.

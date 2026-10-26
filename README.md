@@ -16,9 +16,9 @@ vertciti 的聊天助手工程（codename `chat`，module id `chat`）：FastAPI
 ## 概览
 
 本工程在 anomalies clean-room 运行时之上重建 chat，P0 范围全部带测试。用户可见的名称暂定为 **vertciti 智能助手 /
-vertciti Assistant**（纯描述性命名；终名由品牌设计组和 GC 确认），旧项目名称（D146）不出现在代码和用户可见面。
+vertciti Assistant**（纯描述性命名；终名由品牌设计组和 GC 确认），旧项目名称不出现在代码和用户可见面。
 
-与 anomalies 运行时的关系是 **HTTP 集成**（M1/D147 双向零依赖）：只调用 `POST /api/v1/chat` 与
+与 anomalies 运行时的关系是 **HTTP 集成**（M1 双向零依赖）：只调用 `POST /api/v1/chat` 与
 `GET /api/v1/chat/stream?run_id=`，不 import 其代码，不共享包、库或密钥。2023 旧线只作为只读学习材料，没有抄写
 任何一行，由 CI 门禁强制检查。
 
@@ -34,7 +34,7 @@ vertciti Assistant**（纯描述性命名；终名由品牌设计组和 GC 确�
 | 6 | 诚实标签 | 全部响应带 `honesty` 字段（`🟢` / `🟡`）；`/health` 分组件标注；dev 和过渡态一律 `🟡` |
 | 7 | 漏斗 CTA（契约 §2.5） | `funnel.py`：`GET /v1/cta/funnel`（`utm_source=workbench&utm_medium=chat`）；免费，无付费墙 |
 | 8 | 前端聊天 UI | `frontend/`：vertciti 品牌小写、SSE 实时输出、诚实标签、移动端可用 |
-| 9 | CI 门禁 | `ci/m1-gate.sh`（命中 2023 标识或 D146 旧称即失败；GitHub Actions 通过 `tests/test_m1_gate.py` 执行）+ `ci/license-scan.py`（阻断 copyleft；目前由 `ci/run-ci.sh` 运行） |
+| 9 | CI 门禁 | `ci/m1-gate.sh`（命中 2023 标识或旧项目名称即失败；GitHub Actions 通过 `tests/test_m1_gate.py` 执行）+ `ci/license-scan.py`（阻断 copyleft；目前由 `ci/run-ci.sh` 运行） |
 | 10 | 成本与转化埋点 | 每次 LLM 调用记录 tokens 和费用（整数分）；`POST /v1/events`（`cta_click` 等）；`GET /v1/metrics/summary` 给出单线索成本 |
 
 ## 快速开始
@@ -89,10 +89,10 @@ vertciti-chat/
 
 - **治理模块**：`backend/app/` 下的 `kill.py`（熔断 / 终止）、`audit.py`（审计日志）、`rate_limit.py`（限流）随每次请求
   链路执行。
-- **零依赖**（M1/D147）：与 anomalies 运行时仅 HTTP 集成，不 import 其代码、不共享包 / 库 / 密钥。
+- **零依赖**（M1）：与 anomalies 运行时仅 HTTP 集成，不 import 其代码、不共享包 / 库 / 密钥。
 - **密钥管理**：无硬编码密钥；LLM key 只走环境变量或进程内存，不落盘、不进日志（access 日志只记方法 / 路径 / 状态码）。
 - **启动自检**：`backend/run.sh`（8120）与 `frontend/serve.sh`（3120）启动前检查端口占用，被占用则拒绝启动。
-- **工程纪律**：D67 clean-room，每个文件带 vertciti clean-room 版权头；D142，禁发事项不进文档或代码注释，无依据数字不写，
+- **工程纪律**：clean-room，每个文件带 vertciti clean-room 版权头；禁发事项不进文档或代码注释，无依据数字不写，
   引用决策用 D 编号。
 - 安全漏洞请私下报告，见 [SECURITY.md](.github/SECURITY.md)。
 

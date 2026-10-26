@@ -23,4 +23,4 @@ repository, but well-scoped contributions are welcome.
 
 AI-generated code is welcome, but the human author is responsible for
 reviewing it: correctness, license compatibility of any adapted snippets
-(see D148 clean-room: learn ideas, never copy code), and no leaked secrets.
+(see clean-room rule: learn ideas, never copy code), and no leaked secrets.
