@@ -12,7 +12,10 @@ out/
 # secrets
 .env
 .env.*
+!.env.example
 *.pem
 # misc
 .DS_Store
 *.log
+# local backups (never commit data)
+backups/

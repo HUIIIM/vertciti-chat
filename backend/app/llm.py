@@ -13,7 +13,12 @@ Rules enforced here:
   env (CHAT_MODEL_DEFAULT / _QUALITY / _CHEAP). No hardcoded model ids, ever.
 - `budget_units` (integer minor units, i.e. cents) is a hard fuse: if the
   realized cost exceeds it, the call is treated as failed (BudgetExceeded).
-- `idempotency_key` is required; repeats return the stored response.
+- `idempotency_key` is required; repeats *from the same caller* return the
+  stored response (keys are scoped per caller, never shared across callers).
+- `max_tokens` defaults to CHAT_LLM_MAX_TOKENS and is capped at
+  CHAT_LLM_MAX_TOKENS_CAP, so no call is unbounded.
+- `fallback_chain` is accepted for contract compatibility; no fallback model is
+  implemented yet, so `fallback_used` is always false (honest, not a claim).
 - Keys live in process memory / env only. Never logged, never persisted.
 
 Provider interface: `LLMProvider`. Dev default is an OpenAI-compatible HTTP
@@ -22,13 +27,16 @@ endpoint; `CHAT_LLM_PROVIDER=fake` selects the deterministic test double.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import time
 from dataclasses import dataclass
 from typing import Protocol
 
 import httpx
 
-from . import audit, db as _db
+from . import audit
+from . import db as _db
 from .config import get_settings
 from .errors import BadRequest, BudgetExceeded, ServiceUnavailable
 
@@ -48,7 +56,7 @@ class LLMResult:
 class LLMProvider(Protocol):
     name: str
 
-    def complete(self, *, model_id: str, messages: list[dict], max_tokens: int | None) -> LLMResult: ...
+    def complete(self, *, model_id: str, messages: list[dict], max_tokens: int) -> LLMResult: ...
 
 
 class FakeProvider:
@@ -56,7 +64,7 @@ class FakeProvider:
 
     name = "fake"
 
-    def complete(self, *, model_id, messages, max_tokens) -> LLMResult:
+    def complete(self, *, model_id: str, messages: list[dict], max_tokens: int) -> LLMResult:
         text = " ".join(m.get("content", "") for m in messages if m.get("role") == "user")
         out = f"[fake:{model_id}] {text[:200]}"
         return LLMResult(model_id=model_id, output=out, tokens_in=50, tokens_out=20, latency_ms=5)
@@ -67,13 +75,11 @@ class OpenAICompatProvider:
 
     name = "openai_compat"
 
-    def complete(self, *, model_id, messages, max_tokens) -> LLMResult:
+    def complete(self, *, model_id: str, messages: list[dict], max_tokens: int) -> LLMResult:
         settings = get_settings()
         if not settings.llm_base_url or not settings.llm_api_key:
             raise ServiceUnavailable("llm_not_configured: set CHAT_LLM_BASE_URL and CHAT_LLM_API_KEY")
-        body = {"model": model_id, "messages": messages}
-        if max_tokens:
-            body["max_tokens"] = max_tokens
+        body = {"model": model_id, "messages": messages, "max_tokens": max_tokens}
         started = time.monotonic()
         try:
             with httpx.Client(timeout=60.0) as client:
@@ -87,7 +93,10 @@ class OpenAICompatProvider:
         latency_ms = int((time.monotonic() - started) * 1000)
         if resp.status_code >= 400:
             raise ServiceUnavailable(f"llm error {resp.status_code}")
-        data = resp.json()
+        try:
+            data = resp.json()
+        except ValueError as e:
+            raise ServiceUnavailable("llm returned non-JSON") from e
         choice = (data.get("choices") or [{}])[0]
         usage = data.get("usage") or {}
         return LLMResult(
@@ -103,7 +112,11 @@ def resolve_model(policy: str) -> str:
     if policy not in POLICIES:
         raise BadRequest(f"model_policy must be one of {POLICIES}")
     settings = get_settings()
-    model = {"default": settings.model_default, "quality": settings.model_quality, "cheap": settings.model_cheap}[policy]
+    model = {
+        "default": settings.model_default,
+        "quality": settings.model_quality,
+        "cheap": settings.model_cheap,
+    }[policy]
     if not model:
         raise ServiceUnavailable(
             f"llm_not_configured: no model mapped for policy '{policy}' "
@@ -141,14 +154,15 @@ def route(
         raise BadRequest("idempotency_key is required")
 
     store = _db.get_store()
-    hit = store.fetchone("SELECT response_json FROM idempotency WHERE key=?", (idempotency_key,))
+    scoped = hashlib.sha256(f"llm.route\x1f{actor}\x1f{idempotency_key}".encode()).hexdigest()
+    hit = store.fetchone("SELECT response_json FROM idempotency WHERE key=?", (scoped,))
     if hit:
-        import json
-
         return json.loads(hit["response_json"])
 
     model_id = resolve_model(model_policy)
-    result = _provider().complete(model_id=model_id, messages=messages, max_tokens=max_tokens)
+    settings = get_settings()
+    bounded = min(max_tokens or settings.llm_max_tokens_default, settings.llm_max_tokens_cap)
+    result = _provider().complete(model_id=model_id, messages=messages, max_tokens=bounded)
     cost = cost_cents(result.tokens_in, result.tokens_out, model_policy)
 
     if budget_units is not None and cost > budget_units:
@@ -166,11 +180,12 @@ def route(
         "tokens_out": result.tokens_out,
         "cost_cents": cost,
         "fallback_used": False,
+        "max_tokens": bounded,
         "latency_ms": result.latency_ms,
         "honesty": get_settings().honesty,
     }
     store.execute(
         "INSERT OR IGNORE INTO idempotency(key, endpoint, response_json, created_at) VALUES(?,?,?,?)",
-        (idempotency_key, "llm.route", _db.dumps(response), _db.utcnow()),
+        (scoped, "llm.route", _db.dumps(response), _db.utcnow()),
     )
     return response

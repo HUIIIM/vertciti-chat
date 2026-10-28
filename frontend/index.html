@@ -1,57 +1,44 @@
 <!DOCTYPE html>
-<!-- vertciti chat frontend (dev). vertciti DNA 浅色机构版 + 中英双语。
+<!-- vertciti chat frontend. vertciti DNA 浅色机构版 + 中英双语。
+     No inline script or style: the page runs under a strict CSP (serve.py).
      TODO(brand): 页面标题/品牌名为 interim 描述性命名"vertciti 智能助手"，终名走品牌设计组＋GC 确认后替换。 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- empty = same host on port 8120; set to the API origin in production -->
+<meta name="vc-api-base" content="">
 <title>vertciti 智能助手</title>
 <link rel="stylesheet" href="style.css">
-<script>
-/* 轻量 i18n：默认 zh；?lang=en 深链优先，其次 localStorage；缺项回退 zh，绝不留空。 */
-(function(){
-  var Q=new URLSearchParams(location.search); var lang=Q.get('lang');
-  try{ if(lang){localStorage.setItem('vc_lang',lang);} else {lang=localStorage.getItem('vc_lang');} }catch(e){}
-  lang = (lang==='en') ? 'en' : 'zh'; window.VC_LANG=lang;
-  var D={
-    title:{zh:'智能助手',en:'Assistant'},
-    dev:{zh:'dev 过渡态',en:'dev preview'},
-    welcomeEyebrow:{zh:'免费 · 无需注册',en:'FREE · NO SIGNUP'},
-    welcome:{zh:'问点什么，vertciti 直接回答。',en:'Ask anything — vertciti answers directly.'},
-    sug1:{zh:'帮我比较三家 LLM API 的价格',en:'Compare pricing of three LLM APIs'},
-    sug2:{zh:'把这段话翻译成地道英文',en:'Translate this into natural English'},
-    sug3:{zh:'解释什么是 cap rate',en:'Explain what a cap rate is'},
-    ph:{zh:'问点什么…（免费，无需注册）',en:'Ask anything… (free, no signup)'},
-    send:{zh:'发送',en:'Send'},
-    devkey:{zh:'开发者：API Key',en:'Developer: API Key'},
-    keyph:{zh:'X-API-Key（仅保存在页面内存，刷新丢失）',en:'X-API-Key (in page memory only; lost on refresh)'},
-    use:{zh:'使用',en:'Use'},
-    foot:{zh:'免费体验 · 对话内容仅用于本次会话',en:'Free preview · conversation used only for this session'},
-    you:{zh:'你',en:'You'},
-    asst:{zh:'vertciti 智能助手',en:'vertciti Assistant'},
-    free:{zh:'（免费）',en:'(free)'},
-    errPrefix:{zh:'[出错] ',en:'[Error] '},
-    needKey:{zh:'请先在下方填入 API Key',en:'Enter your API Key below first'},
-    notConnected:{zh:'当前智能体运行时未连接（dev 过渡态），对话可能不可用。',
-                  en:'The agent runtime is not connected yet (dev preview). Chat may be unavailable.'}
-  };
-  window.T=function(k){ var e=D[k]; return e ? (e[window.VC_LANG]||e.zh) : k; };
-  window.VC_setLang=function(next){ try{localStorage.setItem('vc_lang',next);}catch(e){}
-    var u=new URL(location.href); u.searchParams.set('lang',next); location.href=u.toString(); };
-})();
-</script>
+<script src="i18n.js"></script>
+<script src="shortcuts.js"></script>
 </head>
 <body>
+<a class="skip" href="#input" data-i18n="skip">跳到输入框</a>
+<div id="pageError" class="page-error" role="alert" hidden></div>
+
 <header class="topbar">
   <div class="brand">vertciti<span class="dot">.</span></div>
   <div class="title"><span data-i18n="title">智能助手</span> <span class="assistant-en">Assistant</span></div>
   <div class="right">
-    <span class="honesty"><span class="sq" aria-hidden="true"></span><span data-i18n="dev">dev 过渡态</span></span>
+    <span id="status" class="status" role="status" aria-live="polite" data-state="checking">
+      <span class="sq" aria-hidden="true"></span><span id="statusText" data-i18n="stChecking">检查中…</span>
+    </span>
     <button type="button" class="langtoggle" id="langToggle"></button>
   </div>
 </header>
 
-<main class="chat">
+<main class="chat" id="main">
+  <div class="toolbar">
+    <button type="button" id="newChat" class="tool" data-i18n="newChat">新对话</button>
+    <details id="historyBox" class="history">
+      <summary data-i18n="history">历史对话</summary>
+      <ul id="historyList" class="history-list"></ul>
+    </details>
+    <span class="spacer"></span>
+    <button type="button" id="deleteChat" class="tool tool-danger" data-i18n="del" hidden>删除本对话</button>
+  </div>
+
   <div id="welcome" class="welcome">
     <p class="w-eyebrow" data-i18n="welcomeEyebrow">免费 · 无需注册</p>
     <h1 class="w-title" data-i18n="welcome">问点什么，vertciti 直接回答。</h1>
@@ -61,42 +48,37 @@
       <button type="button" class="sug" data-i18n="sug3">解释什么是 cap rate</button>
     </div>
   </div>
-  <div id="messages" class="messages" aria-live="polite"></div>
+  <div id="messages" class="messages" aria-live="polite" aria-relevant="additions"></div>
   <div id="ctaRow" class="cta-row" hidden></div>
   <form id="composer" class="composer">
-    <input id="input" type="text" placeholder="问点什么…（免费，无需注册）" data-i18n-ph="ph" autocomplete="off" maxlength="20000">
+    <label for="input" class="vh" data-i18n="inputLabel">你的消息</label>
+    <input id="input" type="text" placeholder="问点什么…（免费，无需注册）" data-i18n-ph="ph"
+           autocomplete="off" maxlength="20000">
     <button type="submit" id="sendBtn" data-i18n="send">发送</button>
+    <button type="button" id="stopBtn" class="stop" data-i18n="stop" hidden>停止</button>
   </form>
-  <details class="keybox">
-    <summary data-i18n="devkey">开发者：API Key</summary>
-    <input id="apiKey" type="password" placeholder="X-API-Key（仅保存在页面内存，刷新丢失）" data-i18n-ph="keyph">
-    <button id="saveKey" type="button" data-i18n="use">使用</button>
-  </details>
+  <p id="meter" class="meter" aria-live="polite"></p>
 </main>
 
 <footer class="foot">
-  <span data-i18n="foot">免费体验 · 对话内容仅用于本次会话</span>
+  <span id="footText">免费体验</span>
+  <button type="button" id="helpBtn" class="linkish" data-i18n="shortcuts">快捷键</button>
 </footer>
 
-<script>
-/* 应用静态翻译 + 语言开关 + 建议词 */
-(function(){
-  function apply(){
-    document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent=T(el.getAttribute('data-i18n')); });
-    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.placeholder=T(el.getAttribute('data-i18n-ph')); });
-    if(window.VC_LANG==='en') document.documentElement.lang='en';
-    var lt=document.getElementById('langToggle');
-    if(lt){ lt.textContent = window.VC_LANG==='en' ? '中文' : 'EN';
-      lt.onclick=function(){ VC_setLang(window.VC_LANG==='en'?'zh':'en'); }; }
-    document.querySelectorAll('.sug').forEach(function(b){
-      b.addEventListener('click',function(){
-        var inp=document.getElementById('input'); inp.value=b.textContent; inp.focus();
-      });
-    });
-  }
-  if(document.readyState!=='loading') apply(); else document.addEventListener('DOMContentLoaded',apply);
-})();
-</script>
+<dialog id="helpDialog" class="dialog" aria-labelledby="helpTitle">
+  <h2 id="helpTitle" data-i18n="shortcuts">快捷键</h2>
+  <dl id="helpList" class="keys"></dl>
+  <form method="dialog"><button type="submit" data-i18n="close">关闭</button></form>
+</dialog>
+
+<dialog id="paletteDialog" class="dialog" aria-labelledby="paletteTitle">
+  <h2 id="paletteTitle" class="vh" data-i18n="palette">指令面板</h2>
+  <label for="paletteInput" class="vh" data-i18n="palette">指令面板</label>
+  <input id="paletteInput" type="text" autocomplete="off" data-i18n-ph="palettePh"
+         role="combobox" aria-controls="paletteList" aria-expanded="true">
+  <ul id="paletteList" class="palette-list" role="listbox"></ul>
+</dialog>
+
 <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+# Test and lint tooling (top level, pinned). Includes the runtime lock.
+#   pip-compile --generate-hashes --allow-unsafe -o requirements-dev.txt requirements-dev.in
+-c requirements.txt
+-r requirements.in
+pytest==9.1.1
+ruff==0.17.2
+mypy==2.4.0

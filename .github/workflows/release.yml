@@ -1,0 +1,45 @@
+# Release: a pushed tag vX.Y.Z produces a source archive and a CycloneDX SBOM,
+# both with build provenance attestations (SLSA v1 provenance via GitHub), and
+# a GitHub Release carrying them. Rollback = redeploy the previous tag
+# (docs/RUNBOOK.md).
+name: Release
+on:
+  push:
+    tags: ["v*.*.*"]
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write       # create the GitHub Release
+      id-token: write       # sign the attestation
+      attestations: write   # store the attestation
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      - name: Verify the tagged tree (hash-locked install + tests)
+        run: |
+          python -m pip install --require-hashes -r backend/requirements-dev.txt
+          ruff check . && mypy && pytest -q
+      - name: Build source archive and SBOM
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir dist
+          git archive --format=tar.gz --prefix="vertciti-chat-${TAG}/" -o "dist/vertciti-chat-${TAG}.tar.gz" "${TAG}"
+          python ci/sbom.py "${TAG#v}" > "dist/vertciti-chat-${TAG}.cdx.json"
+          (cd dist && sha256sum * > SHA256SUMS)
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: "dist/*"
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "${TAG}" dist/* --title "${TAG}" --notes-file CHANGELOG.md --verify-tag

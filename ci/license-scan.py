@@ -13,8 +13,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 REQ = REPO / "backend" / "requirements.txt"
 
-COPYLEFT = re.compile(r"GNU (General|Affero|Lesser)|AGPL|GPL|SSPL|Polyform|BUSL|CC-BY-NC", re.I)
-PERMISSIVE = re.compile(r"MIT|Apache|BSD|ISC|PSF|Python Software|MPL|Unlicense|CC0|WTFPL", re.I)
+COPYLEFT = re.compile(r"GNU (General|Affero|Lesser)|AGPL|GPL|SSPL|Polyform|BUSL|CC-BY-NC", re.IGNORECASE)
+PERMISSIVE = re.compile(r"MIT|Apache|BSD|ISC|PSF|Python Software|MPL|Unlicense|CC0|WTFPL", re.IGNORECASE)
 
 
 def pypi_license(name: str):
@@ -33,13 +33,15 @@ def main() -> int:
     strict = "--strict" in sys.argv
     failed, warned = [], []
     for line in REQ.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"):
+        # hash-locked lock file: one "name==version \" line per package,
+        # followed by "--hash=..." and "# via" lines that are not packages
+        m = re.match(r"^([A-Za-z0-9][A-Za-z0-9_.\-]*)==", line)
+        if not m:
             continue
-        name = re.split(r"[=<>!~ ]", line)[0]
+        name = m.group(1)
         try:
             blob, label = pypi_license(name)
-        except Exception as e:  # network hiccup: fail closed in strict, warn otherwise
+        except Exception as e:  # noqa: BLE001 - network hiccup: fail closed in strict, warn otherwise
             (failed if strict else warned).append(f"{name}: metadata fetch failed ({e})")
             continue
         if COPYLEFT.search(blob):

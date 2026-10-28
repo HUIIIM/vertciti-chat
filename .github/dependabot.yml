@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # backend: requirements.in -> hash-locked requirements.txt (pip-compile)
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
@@ -9,6 +10,14 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+  # CI browser tooling (Playwright lockfile)
+  - package-ecosystem: "npm"
+    directory: "/ci"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies"]
+    open-pull-requests-limit: 3
+  # SHA-pinned actions: Dependabot updates the SHA and the tag comment
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
