@@ -20,7 +20,7 @@ RUNS: dict[str, float] = {}
 
 
 class Handler(BaseHTTPRequestHandler):
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     def _json(self, code: int, obj: object) -> None:

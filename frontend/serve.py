@@ -57,7 +57,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
         super().send_error(code, message, explain)
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - stdlib signature
+    def log_message(self, format: str, *args: object) -> None:
         # path and status only; never query strings (they carry session ids)
         path = self.path.split("?", 1)[0]
         print(f'{{"msg":"static","path":"{path}","status":"{args[1] if len(args) > 1 else ""}"}}')
