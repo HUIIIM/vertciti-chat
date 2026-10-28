@@ -15,7 +15,13 @@ class AppError(Exception):
     status_code: int = 500
     code: str = "internal_error"
 
-    def __init__(self, message: str = "", *, retry_after: int | None = None, detail: dict | None = None):
+    def __init__(
+        self,
+        message: str = "",
+        *,
+        retry_after: int | None = None,
+        detail: dict | None = None,
+    ) -> None:
         super().__init__(message)
         self.message = message or self.code
         self.retry_after = retry_after
@@ -65,3 +71,8 @@ class ChatKilled(AppError):
 class BadRequest(AppError):
     status_code = 400
     code = "bad_request"
+
+
+class Conflict(AppError):
+    status_code = 409
+    code = "conflict"

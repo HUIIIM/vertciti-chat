@@ -49,7 +49,8 @@ def test_no_2023_identifiers():
     patterns = [(p, re.compile(p, re.IGNORECASE)) for p in FORBIDDEN]
     for path in _iter_files():
         try:
-            text = open(path, encoding="utf-8", errors="ignore").read()
+            with open(path, encoding="utf-8", errors="ignore") as fh:
+                text = fh.read()
         except OSError:
             continue
         for name, rx in patterns:

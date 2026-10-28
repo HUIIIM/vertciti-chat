@@ -12,12 +12,17 @@ database, no shared secrets with that codebase).
 Endpoints used: POST /api/v1/chat (send message) and
 GET /api/v1/chat/stream?run_id= (SSE). All failures surface as
 AnomaliesUnavailable so callers can answer honestly (🟡) instead of faking.
+
+The stream is consumed with an *async* client: one slow run must never block
+the event loop that serves every other request. Each read has an idle timeout
+and the whole stream has a hard deadline (config: CHAT_STREAM_*).
 """
 
 from __future__ import annotations
 
 import json
-from typing import Iterator
+import time
+from collections.abc import AsyncIterator
 
 import httpx
 
@@ -29,6 +34,10 @@ from .config import get_settings
 # through an egress proxy, and localhost must never depend on no_proxy config.
 class AnomaliesUnavailable(Exception):
     """The runtime is not reachable or not configured. Callers must be honest."""
+
+
+class StreamDeadlineExceeded(AnomaliesUnavailable):
+    """The run exceeded CHAT_STREAM_MAX_SECONDS; the stream was cut."""
 
 
 def _headers() -> dict:
@@ -60,45 +69,57 @@ def post_chat(message: str, history: list[dict] | None = None) -> dict:
         data = resp.json()
     except json.JSONDecodeError as e:
         raise AnomaliesUnavailable("runtime returned non-JSON") from e
+    if not isinstance(data, dict):
+        raise AnomaliesUnavailable("runtime returned an unexpected body")
+    cards = data.get("cards", [])
     return {
         "run_id": data.get("run_id"),
-        "reply": data.get("reply", ""),
-        "cards": data.get("cards", []),
+        "reply": data.get("reply", "") or "",
+        "cards": cards if isinstance(cards, list) else [],
     }
 
 
-def stream_chat(run_id: str) -> Iterator[tuple[str, str]]:
-    """GET /api/v1/chat/stream?run_id= -> yields (event, data) SSE tuples."""
+async def stream_chat(run_id: str) -> AsyncIterator[tuple[str, str]]:
+    """GET /api/v1/chat/stream?run_id= -> yields (event, data) SSE tuples.
+
+    Bounded: idle timeout per read (CHAT_STREAM_IDLE_SECONDS) and a total
+    deadline (CHAT_STREAM_MAX_SECONDS) after which StreamDeadlineExceeded is
+    raised.
+    """
     settings = get_settings()
+    deadline = time.monotonic() + settings.stream_max_seconds
+    timeout = httpx.Timeout(10.0, read=float(settings.stream_idle_seconds))
     try:
-        with httpx.Client(timeout=None, trust_env=False) as client:
-            with client.stream(
-                "GET",
-                f"{settings.anomalies_base_url}/api/v1/chat/stream",
-                headers=_headers(),
-                params={"run_id": run_id},
-                timeout=120.0,
-            ) as resp:
-                if resp.status_code >= 400:
-                    raise AnomaliesUnavailable(f"stream rejected: {resp.status_code}")
-                event = "message"
-                data_lines: list[str] = []
-                for line in resp.iter_lines():
-                    if not line:
-                        if data_lines:
-                            yield event, "\n".join(data_lines)
-                        event, data_lines = "message", []
-                        continue
-                    if line.startswith(":"):
-                        continue
-                    if line.startswith("event:"):
-                        event = line[6:].strip()
-                    elif line.startswith("data:"):
-                        data_lines.append(line[5:].lstrip())
-                if data_lines:
-                    yield event, "\n".join(data_lines)
+        async with httpx.AsyncClient(timeout=timeout, trust_env=False) as client, client.stream(
+            "GET",
+            f"{settings.anomalies_base_url}/api/v1/chat/stream",
+            headers=_headers(),
+            params={"run_id": run_id},
+        ) as resp:
+            if resp.status_code >= 400:
+                raise AnomaliesUnavailable(f"stream rejected: {resp.status_code}")
+            event = "message"
+            data_lines: list[str] = []
+            async for line in resp.aiter_lines():
+                if time.monotonic() > deadline:
+                    raise StreamDeadlineExceeded(
+                        f"run exceeded {settings.stream_max_seconds}s and was cut"
+                    )
+                if not line:
+                    if data_lines:
+                        yield event, "\n".join(data_lines)
+                    event, data_lines = "message", []
+                    continue
+                if line.startswith(":"):
+                    continue
+                if line.startswith("event:"):
+                    event = line[6:].strip()
+                elif line.startswith("data:"):
+                    data_lines.append(line[5:].lstrip())
+            if data_lines:
+                yield event, "\n".join(data_lines)
     except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as e:
-        raise AnomaliesUnavailable(f"stream unreachable: {e}") from e
+        raise AnomaliesUnavailable(f"stream unreachable or idle: {type(e).__name__}") from e
 
 
 def probe() -> bool:
@@ -108,5 +129,5 @@ def probe() -> bool:
         with httpx.Client(timeout=2.0, trust_env=False) as client:
             resp = client.get(f"{settings.anomalies_base_url}/api/v1/health")
             return resp.status_code < 500
-    except Exception:
+    except Exception:  # noqa: BLE001 - a probe must never raise
         return False

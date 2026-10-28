@@ -11,18 +11,20 @@ POST   /v1/memory/store   {namespace, key, payload, pii_fields?, ttl_days?, embe
 POST   /v1/memory/recall  {namespace?, query?, top_k?, min_score?}
 DELETE /v1/memory/forget  {namespace, key}
 
+Service principals only (CHAT_API_KEY): visitors and the admin key get 403.
+Store and recall stop while the kill switch is engaged; forget never stops.
 Isolation and privacy rules live in memory_store.py; this router only wires
 auth, rate limiting and honesty labels.
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from . import audit, db as _db
-from .auth import require_api_key
+from . import audit
+from .auth import Principal, ServicePrincipal
 from .config import get_settings
-from .errors import RateLimited
+from .kill import check_not_killed
 from .memory_store import MODULE_ID, enforce_module, get_memory_store, redact_pii
 from .models import MemoryForgetRequest, MemoryRecallRequest, MemoryStoreRequest
 from .rate_limit import limiter
@@ -30,17 +32,15 @@ from .rate_limit import limiter
 router = APIRouter(prefix="/v1/memory", tags=["memory"])
 
 
-def _rl(identity: dict) -> None:
-    ok, retry = limiter.check_request(identity)
-    if not ok:
-        raise RateLimited("rate limit exceeded", retry_after=retry)
-    limiter.count_request(identity)
+def _rl(principal: Principal) -> None:
+    limiter.enforce(principal)
 
 
 @router.post("/store")
-def store(body: MemoryStoreRequest, identity: dict = Depends(require_api_key)):
-    _rl(identity)
-    enforce_module(body.module, identity["key_hash"])
+def store(body: MemoryStoreRequest, principal: ServicePrincipal) -> dict:
+    check_not_killed()
+    _rl(principal)
+    enforce_module(body.module, principal.subject)
     redacted, had_pii = redact_pii(body.payload, body.pii_fields)
     result = get_memory_store().store(
         module_id=MODULE_ID,
@@ -50,16 +50,17 @@ def store(body: MemoryStoreRequest, identity: dict = Depends(require_api_key)):
         pii_redacted=had_pii,
         ttl_days=body.ttl_days,
     )
-    audit.record("memory.store", identity["key_hash"],
+    audit.record("memory.store", principal.subject,
                  {"namespace": body.namespace, "key": body.key, "pii_redacted": had_pii})
     return {**result, "pii_redacted": had_pii, "honesty": get_settings().honesty,
             "note": "dev store: keyword recall only; vector search lands with platform base P"}
 
 
 @router.post("/recall")
-def recall(body: MemoryRecallRequest, identity: dict = Depends(require_api_key)):
-    _rl(identity)
-    enforce_module(body.module, identity["key_hash"])
+def recall(body: MemoryRecallRequest, principal: ServicePrincipal) -> dict:
+    check_not_killed()
+    _rl(principal)
+    enforce_module(body.module, principal.subject)
     records = get_memory_store().recall(
         module_id=MODULE_ID, namespace=body.namespace, query=body.query,
         top_k=body.top_k, min_score=body.min_score,
@@ -68,10 +69,11 @@ def recall(body: MemoryRecallRequest, identity: dict = Depends(require_api_key))
 
 
 @router.delete("/forget")
-def forget(body: MemoryForgetRequest, identity: dict = Depends(require_api_key)):
-    _rl(identity)
-    enforce_module(body.module, identity["key_hash"])
+def forget(body: MemoryForgetRequest, principal: ServicePrincipal) -> dict:
+    """Erasure keeps working while the kill switch is engaged."""
+    _rl(principal)
+    enforce_module(body.module, principal.subject)
     deleted = get_memory_store().forget(module_id=MODULE_ID, namespace=body.namespace, key=body.key)
-    audit.record("memory.forget", identity["key_hash"],
+    audit.record("memory.forget", principal.subject,
                  {"namespace": body.namespace, "key": body.key, "deleted": deleted})
     return {"deleted": deleted, "honesty": get_settings().honesty}

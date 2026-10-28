@@ -13,8 +13,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 REQ = REPO / "backend" / "requirements.txt"
 
-COPYLEFT = re.compile(r"GNU (General|Affero|Lesser)|AGPL|GPL|SSPL|Polyform|BUSL|CC-BY-NC", re.I)
-PERMISSIVE = re.compile(r"MIT|Apache|BSD|ISC|PSF|Python Software|MPL|Unlicense|CC0|WTFPL", re.I)
+COPYLEFT = re.compile(r"GNU (General|Affero|Lesser)|AGPL|GPL|SSPL|Polyform|BUSL|CC-BY-NC", re.IGNORECASE)
+PERMISSIVE = re.compile(r"MIT|Apache|BSD|ISC|PSF|Python Software|MPL|Unlicense|CC0|WTFPL", re.IGNORECASE)
 
 
 def pypi_license(name: str):
@@ -39,7 +39,7 @@ def main() -> int:
         name = re.split(r"[=<>!~ ]", line)[0]
         try:
             blob, label = pypi_license(name)
-        except Exception as e:  # network hiccup: fail closed in strict, warn otherwise
+        except Exception as e:  # noqa: BLE001 - network hiccup: fail closed in strict, warn otherwise
             (failed if strict else warned).append(f"{name}: metadata fetch failed ({e})")
             continue
         if COPYLEFT.search(blob):
