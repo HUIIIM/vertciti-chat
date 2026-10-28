@@ -17,8 +17,9 @@ Visitor tokens are minted without signup (`POST /v1/visitor`) and signed with
 HMAC-SHA256 under CHAT_VISITOR_SECRET, so the public page never holds a key
 that can do anything beyond its own conversations.
 
-Keys are compared in constant time. Logs and the database only ever see
-hashes: the key hash, the visitor id, and an HMAC of the client IP.
+Keys are compared in constant time and never stored, hashed or logged. The
+database only sees fixed subject names for the two keys, the random visitor
+id, and an HMAC of the client IP.
 """
 
 from __future__ import annotations
@@ -37,6 +38,11 @@ from .config import get_settings
 from .errors import Forbidden, Unauthorized
 
 TOKEN_VERSION = "v1"  # noqa: S105 - a format tag, not a credential
+# There is exactly one service key and one admin key, so their subjects are
+# fixed names. No value derived from a key is ever stored or logged, and
+# rotating a key keeps the service's sessions and quota history.
+SERVICE_SUBJECT = "service:main"
+ADMIN_SUBJECT = "admin:main"
 
 
 @dataclass(frozen=True)
@@ -49,10 +55,6 @@ class Principal:
     def key_hash(self) -> str:
         """Back-compat name used by audit/quota callers: the subject id."""
         return self.subject
-
-
-def key_hash(raw: str) -> str:
-    return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
 def ip_hash(ip: str) -> str:
@@ -117,9 +119,9 @@ def _resolve(request: Request) -> Principal | None:
     api_key = request.headers.get("x-api-key", "") or _bearer(request)
     if api_key:
         if _match(api_key, settings.admin_key):
-            return Principal("admin", f"admin:{key_hash(api_key)}", iph)
+            return Principal("admin", ADMIN_SUBJECT, iph)
         if _match(api_key, settings.api_key):
-            return Principal("service", f"service:{key_hash(api_key)}", iph)
+            return Principal("service", SERVICE_SUBJECT, iph)
         return None
     token = request.headers.get("x-visitor-token", "")
     if token:
