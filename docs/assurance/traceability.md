@@ -7,7 +7,7 @@ so this file cannot drift from the tests. Do not edit by hand.
 Ids are SOTA v1.0 clauses (DES/MOT/INT/ARCH/SEC/VER/OPS), NPR 7150.2D SWE items mapped
 by analogy (not a compliance claim), and product requirements of this repo.
 
-Requirements covered: 50 · test references: 157
+Requirements covered: 51 · test references: 159
 
 | Requirement | Tests |
 |---|---|
@@ -48,6 +48,7 @@ Requirements covered: 50 · test references: 157
 | MOT-1 | `ci/e2e_chat.js` — no running animations |
 | MOT-4 | `ci/e2e_chat.js` — Esc stops the reply and says so |
 | MOT-6 | `ci/e2e_chat.js` — no running animations |
+| OPS-1 | `tests/test_ops.py::test_backup_and_restore_drill_pass` |
 | OPS-2 | `tests/test_platform.py::test_logs_are_json_with_trace_id`<br>`tests/test_platform.py::test_trace_id_echoed_only_when_well_formed` |
 | OPS-3 | `ci/e2e_chat.js` — going offline shows unreachable<br>`ci/e2e_chat.js` — status chip shows live from /health<br>`ci/e2e_chat.js` — status chip shows the service stopped |
 | PRIV-erasure | `ci/e2e_chat.js` — second click deletes on the server<br>`tests/test_kill.py::test_erasure_and_reads_work_while_killed`<br>`tests/test_sessions.py::test_list_and_delete_sessions` |
@@ -55,7 +56,7 @@ Requirements covered: 50 · test references: 157
 | PRIV-retention | `tests/test_memory.py::test_ttl_expiry_purged`<br>`tests/test_platform.py::test_retention_purges_old_conversations`<br>`tests/test_platform.py::test_visitor_is_told_the_retention_period` |
 | PRODUCT-free-no-signup | `tests/test_auth_ratelimit.py::test_visitor_token_needs_no_key_and_works` |
 | SEC-A1 | `tests/test_auth_ratelimit.py::test_missing_credentials_401`<br>`tests/test_auth_ratelimit.py::test_per_ip_bucket_caps_many_visitor_tokens`<br>`tests/test_auth_ratelimit.py::test_tampered_or_expired_visitor_token_rejected`<br>`tests/test_auth_ratelimit.py::test_visitor_quota_is_per_visitor_not_global`<br>`tests/test_auth_ratelimit.py::test_visitor_token_needs_no_key_and_works`<br>`tests/test_auth_ratelimit.py::test_wrong_key_401`<br>`tests/test_authz.py::test_admin_key_cannot_chat`<br>`tests/test_authz.py::test_events_only_against_own_sessions`<br>`tests/test_authz.py::test_events_reject_unknown_types_and_large_details`<br>`tests/test_authz.py::test_operator_routes_are_admin_only`<br>`tests/test_authz.py::test_service_key_cannot_read_visitor_sessions`<br>`tests/test_authz.py::test_service_routes_reject_visitors_and_admin`<br>`tests/test_authz.py::test_session_list_only_shows_own`<br>`tests/test_authz.py::test_visitor_cannot_reach_another_visitors_session`<br>`tests/test_funnel.py::test_metrics_not_poisonable_by_visitors`<br>`tests/test_sessions.py::test_idempotency_key_scoped_to_session_and_caller` |
-| SEC-A4 | `tests/test_kill.py::test_kill_audit_trail`<br>`tests/test_platform.py::test_audit_chain_detects_deletion`<br>`tests/test_platform.py::test_audit_chain_verifies_and_detects_tampering` |
+| SEC-A4 | `tests/test_kill.py::test_kill_audit_trail`<br>`tests/test_ops.py::test_audit_anchor_prints_head_and_refuses_broken_chain`<br>`tests/test_platform.py::test_audit_chain_detects_deletion`<br>`tests/test_platform.py::test_audit_chain_verifies_and_detects_tampering` |
 | SEC-A6 | `ci/e2e_chat.js` — frontend sends a CSP without unsafe-inline<br>`tests/test_platform.py::test_prod_with_full_config_starts_without_docs`<br>`tests/test_platform.py::test_security_headers_on_every_response` |
 | SEC-A7 | `ci/e2e_chat.js` — runtime markup rendered as text<br>`tests/test_sessions.py::test_runtime_internals_not_forwarded` |
 | SEC-error-contract | `tests/test_platform.py::test_framework_errors_use_contract_shape`<br>`tests/test_sessions.py::test_get_session_404` |

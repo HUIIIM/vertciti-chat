@@ -3,7 +3,9 @@
 ## Reporting a vulnerability
 
 Please **do not** open a public issue for security vulnerabilities.
-Email the maintainer directly with:
+Report privately through GitHub: **Security → Report a vulnerability**
+(https://github.com/HUIIIM/vertciti-chat/security/advisories/new; the repository
+owner must keep private vulnerability reporting enabled for this link to work). Include:
 
 - a description of the vulnerability,
 - steps to reproduce,
@@ -15,6 +17,8 @@ before any public disclosure.
 ## Scope notes
 
 - Automated secret scanning runs on every push via the gitleaks workflow.
+- Operational response (kill switch, key rotation, audit-chain checks) is in
+  [docs/RUNBOOK.md](../docs/RUNBOOK.md).
 - Dependency vulnerabilities are tracked via Dependabot alerts and fixed
   on a critical/high-first basis.
 
