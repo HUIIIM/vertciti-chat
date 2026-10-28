@@ -1,0 +1,12 @@
+{
+  "name": "vertciti-chat-frontend",
+  "private": true,
+  "version": "0.2.0",
+  "description": "vertciti chat static frontend (no runtime dependencies)",
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "lint": "node --check app.js && node --check i18n.js && node --check shortcuts.js",
+    "build": "node --check app.js && node --check i18n.js && node --check shortcuts.js"
+  }
+}

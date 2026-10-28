@@ -1,5 +1,6 @@
 #!/bin/bash
-# vertciti chat frontend dev server (port 3120 per PORTS.md).
+# vertciti chat frontend dev server (port 3120 per PORTS.md), with the CSP and
+# security headers production must also send (see frontend/serve.py).
 set -euo pipefail
 # PORTS.md 约定端口占用自检：被占用则报错退出，不静默顶掉
 if (exec 3<>/dev/tcp/127.0.0.1/3120) 2>/dev/null; then
@@ -7,4 +8,4 @@ if (exec 3<>/dev/tcp/127.0.0.1/3120) 2>/dev/null; then
   exit 1
 fi
 cd "$(dirname "$0")"
-python3 -m http.server 3120
+exec python3 serve.py --port 3120
